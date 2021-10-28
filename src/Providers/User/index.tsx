@@ -1,11 +1,10 @@
 import { createContext, ReactNode, useContext, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { api } from "../../Server/api";
-import { History } from "history";
 
 interface user {
   email: string;
-  password: string;
+  password?: string;
 }
 
 interface UserProviderProps {
@@ -14,13 +13,10 @@ interface UserProviderProps {
 
 interface UserContextData {
   auth: string;
+  user: user;
   userLogin: (user: user) => void;
   userRegister: (user: user) => void;
   logout: () => void;
-}
-
-interface ChildComponentProps {
-  history: History;
 }
 
 export const UserContext = createContext<UserContextData>(
@@ -28,10 +24,12 @@ export const UserContext = createContext<UserContextData>(
 );
 
 export const UserProvider = ({ children }: UserProviderProps) => {
-  const history = useHistory<ChildComponentProps>();
+  const history = useHistory();
   const [auth, setAuth] = useState<string>(
     () => localStorage.getItem("@tokenLogin") || ""
   );
+
+  const [user, setUser] = useState<user>({} as user);
 
   const userLogin = (user: user) => {
     api
@@ -42,6 +40,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
           JSON.stringify(response.data.accessToken)
         );
         setAuth(response.data.accessToken);
+        setUser(response.data.user);
         history.push("/");
       })
       .catch((err) => console.log(err));
@@ -58,10 +57,13 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
   const logout = () => {
     localStorage.removeItem("@tokenLogin");
+    setAuth("");
   };
 
   return (
-    <UserContext.Provider value={{ userLogin, userRegister, auth, logout }}>
+    <UserContext.Provider
+      value={{ userLogin, userRegister, auth, logout, user }}
+    >
       {children}
     </UserContext.Provider>
   );

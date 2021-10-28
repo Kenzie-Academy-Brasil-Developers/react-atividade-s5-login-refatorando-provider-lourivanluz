@@ -3,17 +3,14 @@ import { Redirect } from "react-router-dom";
 import { DivStyeled } from "./style";
 
 export const Dashboard = () => {
-  const { auth } = useUser();
-  console.log(auth ? "true" : "false");
+  const { logout, user, auth } = useUser();
+
   if (!auth) {
     return <Redirect to={"/register"} />;
   }
-
-  const { logout } = useUser();
-
   return (
     <DivStyeled>
-      <div>{"bem vindo"}</div>
+      <div>{`Bem vindo ${user.email}`}</div>
       <button onClick={logout}>logout</button>
     </DivStyeled>
   );
